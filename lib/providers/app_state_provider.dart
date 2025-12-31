@@ -3,11 +3,13 @@ import '../models/user_progress.dart';
 import '../models/quest.dart';
 import '../models/daily_quest.dart';
 import '../services/storage_service.dart';
+import '../services/firestore_service.dart';
 import '../services/xp_service.dart';
 
 /// Main app state provider using ChangeNotifier
 class AppStateProvider with ChangeNotifier {
   final StorageService _storageService = StorageService();
+  final FirestoreService _firestoreService = FirestoreService();
 
   UserProgress _userProgress = UserProgress();
   List<Quest> _quests = [];
@@ -22,24 +24,36 @@ class AppStateProvider with ChangeNotifier {
     await loadUserProgress();
     await loadQuests();
     await loadDailyQuests();
-    _checkDailyQuestsReset();
+    await _checkDailyQuestsReset();
   }
 
-  /// Load user progress from storage
+  /// Load user progress from storage (Firebase if authenticated, else local)
   Future<void> loadUserProgress() async {
-    _userProgress = await _storageService.loadUserProgress();
+    if (_firestoreService.isAuthenticated) {
+      _userProgress = await _firestoreService.loadUserProgress();
+    } else {
+      _userProgress = await _storageService.loadUserProgress();
+    }
     notifyListeners();
   }
 
-  /// Load quests from storage
+  /// Load quests from storage (Firebase if authenticated, else local)
   Future<void> loadQuests() async {
-    _quests = await _storageService.loadQuests();
+    if (_firestoreService.isAuthenticated) {
+      _quests = await _firestoreService.loadQuests();
+    } else {
+      _quests = await _storageService.loadQuests();
+    }
     notifyListeners();
   }
 
-  /// Load daily quests from storage
+  /// Load daily quests from storage (Firebase if authenticated, else local)
   Future<void> loadDailyQuests() async {
-    _dailyQuests = await _storageService.loadDailyQuests();
+    if (_firestoreService.isAuthenticated) {
+      _dailyQuests = await _firestoreService.loadDailyQuests();
+    } else {
+      _dailyQuests = await _storageService.loadDailyQuests();
+    }
     notifyListeners();
   }
 
@@ -66,10 +80,16 @@ class AppStateProvider with ChangeNotifier {
     // Update daily quests progress
     await _updateDailyQuestsProgress(quest);
 
-    // Save to storage
-    await _storageService.saveUserProgress(_userProgress);
-    await _storageService.updateQuest(completedQuest);
-    await _storageService.saveDailyQuests(_dailyQuests);
+    // Save to storage (Firebase if authenticated, else local)
+    if (_firestoreService.isAuthenticated) {
+      await _firestoreService.saveUserProgress(_userProgress);
+      await _firestoreService.updateQuest(completedQuest);
+      await _firestoreService.saveDailyQuests(_dailyQuests);
+    } else {
+      await _storageService.saveUserProgress(_userProgress);
+      await _storageService.updateQuest(completedQuest);
+      await _storageService.saveDailyQuests(_dailyQuests);
+    }
 
     notifyListeners();
   }
@@ -77,7 +97,11 @@ class AppStateProvider with ChangeNotifier {
   /// Add a new quest
   Future<void> addQuest(Quest quest) async {
     _quests.add(quest);
-    await _storageService.addQuest(quest);
+    if (_firestoreService.isAuthenticated) {
+      await _firestoreService.addQuest(quest);
+    } else {
+      await _storageService.addQuest(quest);
+    }
     notifyListeners();
   }
 
@@ -94,8 +118,12 @@ class AppStateProvider with ChangeNotifier {
     }
 
     // No XP awarded for cancelled quests - only completed quests give XP
-    // Save to storage
-    await _storageService.updateQuest(cancelledQuest);
+    // Save to storage (Firebase if authenticated, else local)
+    if (_firestoreService.isAuthenticated) {
+      await _firestoreService.updateQuest(cancelledQuest);
+    } else {
+      await _storageService.updateQuest(cancelledQuest);
+    }
 
     notifyListeners();
   }
@@ -123,7 +151,11 @@ class AppStateProvider with ChangeNotifier {
       if (updated.isCompleted && !dailyQuest.isCompleted) {
         // Bonus XP for completing daily quest
         _userProgress = XPService.addXP(_userProgress, updated.xpReward);
-        await _storageService.saveUserProgress(_userProgress);
+        if (_firestoreService.isAuthenticated) {
+          await _firestoreService.saveUserProgress(_userProgress);
+        } else {
+          await _storageService.saveUserProgress(_userProgress);
+        }
       }
 
       final index = _dailyQuests.indexWhere((dq) => dq.id == dailyQuest.id);
@@ -134,7 +166,7 @@ class AppStateProvider with ChangeNotifier {
   }
 
   /// Check if daily quests need to be reset (new day)
-  void _checkDailyQuestsReset() {
+  Future<void> _checkDailyQuestsReset() async {
     final now = DateTime.now();
     final lastUpdate = _userProgress.lastUpdate;
 
@@ -142,12 +174,12 @@ class AppStateProvider with ChangeNotifier {
     if (now.year != lastUpdate.year ||
         now.month != lastUpdate.month ||
         now.day != lastUpdate.day) {
-      _resetDailyQuests();
+      await _resetDailyQuests();
     }
   }
 
   /// Reset daily quests for new day
-  void _resetDailyQuests() {
+  Future<void> _resetDailyQuests() async {
     // Generate new daily quests (simplified - you can expand this)
     _dailyQuests = [
       DailyQuest(
@@ -163,8 +195,52 @@ class AppStateProvider with ChangeNotifier {
         date: DateTime.now(),
       ),
     ];
-    _storageService.saveDailyQuests(_dailyQuests);
+    if (_firestoreService.isAuthenticated) {
+      await _firestoreService.saveDailyQuests(_dailyQuests);
+    } else {
+      await _storageService.saveDailyQuests(_dailyQuests);
+    }
     notifyListeners();
+  }
+
+  /// Update user profile (name and username)
+  Future<void> updateUserProfile({
+    String? name,
+    String? username,
+  }) async {
+    _userProgress = _userProgress.copyWith(
+      name: name,
+      username: username,
+    );
+
+    if (_firestoreService.isAuthenticated) {
+      await _firestoreService.saveUserProgress(_userProgress);
+    } else {
+      await _storageService.saveUserProgress(_userProgress);
+    }
+    notifyListeners();
+  }
+
+  /// Clear all local data (called on logout)
+  Future<void> clearLocalData() async {
+    _userProgress = UserProgress();
+    _quests = [];
+    _dailyQuests = [];
+
+    // Clear local storage
+    await _storageService.clearAll();
+
+    notifyListeners();
+  }
+
+  /// Reload data from Firebase (called on login)
+  Future<void> reloadFromFirebase() async {
+    if (_firestoreService.isAuthenticated) {
+      await loadUserProgress();
+      await loadQuests();
+      await loadDailyQuests();
+      await _checkDailyQuestsReset();
+    }
   }
 }
 

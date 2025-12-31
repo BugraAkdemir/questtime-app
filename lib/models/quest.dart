@@ -13,6 +13,7 @@ class Quest {
   final int coinReward; // Coins earned from completing quest
   bool isCompleted;
   final String? customSubjectName; // Custom subject name entered by user
+  final bool isStopwatch; // If true, this is a stopwatch mode quest (no time limit)
 
   Quest({
     String? id,
@@ -25,9 +26,10 @@ class Quest {
     int? coinReward,
     this.isCompleted = false,
     this.customSubjectName,
+    this.isStopwatch = false,
   })  : id = id ?? const Uuid().v4(),
-        xpReward = xpReward ?? _calculateXP(durationMinutes, subject),
-        coinReward = coinReward ?? _calculateCoins(durationMinutes, subject);
+        xpReward = xpReward ?? (isStopwatch ? 0 : _calculateXP(durationMinutes, subject)),
+        coinReward = coinReward ?? (isStopwatch ? 0 : _calculateCoins(durationMinutes, subject));
 
   /// Get display name for subject (custom name if available, otherwise subject display name)
   String get subjectDisplayName {
@@ -68,6 +70,20 @@ class Quest {
     return roundedCoins > 0 ? roundedCoins : 1;
   }
 
+  /// Calculate XP for elapsed seconds (for real-time display)
+  static int calculateXPForSeconds(int elapsedSeconds, Subject subject) {
+    if (elapsedSeconds <= 0) return 0;
+    final durationMinutes = elapsedSeconds / 60.0;
+    return _calculateXP(durationMinutes.round(), subject);
+  }
+
+  /// Calculate coins for elapsed seconds (for real-time display)
+  static int calculateCoinsForSeconds(int elapsedSeconds, Subject subject) {
+    if (elapsedSeconds <= 0) return 0;
+    final durationMinutes = elapsedSeconds / 60.0;
+    return _calculateCoins(durationMinutes.round(), subject);
+  }
+
   /// Convert to JSON for storage
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -80,6 +96,7 @@ class Quest {
         'coinReward': coinReward,
         'isCompleted': isCompleted,
         'customSubjectName': customSubjectName,
+        'isStopwatch': isStopwatch,
       };
 
   /// Create from JSON
@@ -102,6 +119,7 @@ class Quest {
         coinReward: json['coinReward'] as int? ?? 0,
         isCompleted: json['isCompleted'] as bool,
         customSubjectName: json['customSubjectName'] as String?,
+        isStopwatch: json['isStopwatch'] as bool? ?? false,
       );
 
   /// Mark quest as completed
@@ -117,6 +135,27 @@ class Quest {
       coinReward: coinReward,
       isCompleted: true,
       customSubjectName: customSubjectName,
+      isStopwatch: isStopwatch,
+    );
+  }
+
+  /// Complete stopwatch quest with elapsed time
+  Quest completeStopwatch(int elapsedMinutes) {
+    final calculatedXP = _calculateXP(elapsedMinutes, subject);
+    final calculatedCoins = _calculateCoins(elapsedMinutes, subject);
+
+    return Quest(
+      id: id,
+      subject: subject,
+      difficulty: difficulty,
+      durationMinutes: elapsedMinutes,
+      startTime: startTime,
+      endTime: DateTime.now(),
+      xpReward: calculatedXP,
+      coinReward: calculatedCoins,
+      isCompleted: true,
+      customSubjectName: customSubjectName,
+      isStopwatch: isStopwatch,
     );
   }
 

@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 /// Circular animated study timer widget
 class CircularTimer extends StatefulWidget {
   final int durationMinutes;
+  final bool isStopwatch;
   final VoidCallback? onComplete;
   final Function(int remainingSeconds)? onTick;
   final Function(int completedMinutes)? onCancel;
@@ -13,6 +14,7 @@ class CircularTimer extends StatefulWidget {
   const CircularTimer({
     super.key,
     required this.durationMinutes,
+    this.isStopwatch = false,
     this.onComplete,
     this.onTick,
     this.onCancel,
@@ -36,11 +38,19 @@ class _CircularTimerState extends State<CircularTimer>
   @override
   void initState() {
     super.initState();
-    _remainingSeconds = widget.durationMinutes * 60;
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: _remainingSeconds),
-    );
+    if (widget.isStopwatch) {
+      _remainingSeconds = 0; // Start from 0 for stopwatch
+      _controller = AnimationController(
+        vsync: this,
+        duration: const Duration(hours: 24), // Max duration for stopwatch
+      );
+    } else {
+      _remainingSeconds = widget.durationMinutes * 60;
+      _controller = AnimationController(
+        vsync: this,
+        duration: Duration(seconds: _remainingSeconds),
+      );
+    }
     // Update clock every second
     _clockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
@@ -77,54 +87,79 @@ class _CircularTimerState extends State<CircularTimer>
       _isPaused = false;
     });
 
-    final totalSeconds = widget.durationMinutes * 60;
-    final currentProgress = 1.0 - (_remainingSeconds / totalSeconds);
+    if (widget.isStopwatch) {
+      // Stopwatch mode - count up
+      _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        if (!_isRunning) {
+          timer.cancel();
+          return;
+        }
 
-    if (!wasPaused) {
-      _controller.value = currentProgress;
-      _controller.forward();
-    } else {
-      // Resuming - continue from where we left off
-      _controller.forward();
-    }
-
-    // Update more frequently for smoother animation (every 100ms)
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      if (!_isRunning) {
-        timer.cancel();
-        return;
-      }
-
-      if (_remainingSeconds > 0) {
         final now = DateTime.now();
         final sessionStart = _sessionStartTime;
         if (sessionStart != null) {
           final elapsed = now.difference(sessionStart);
-          final newRemaining =
-              totalSeconds - (_totalElapsedSeconds + elapsed.inSeconds);
+          final totalElapsed = _totalElapsedSeconds + elapsed.inSeconds;
 
-          if (newRemaining != _remainingSeconds) {
+          if (totalElapsed != _remainingSeconds) {
             setState(() {
-              _remainingSeconds = newRemaining.clamp(0, totalSeconds);
-              widget.onTick?.call(_remainingSeconds);
+              _remainingSeconds = totalElapsed;
+              widget.onTick?.call(_remainingSeconds); // Elapsed seconds for stopwatch
             });
           }
-
-          // Update controller smoothly
-          final progress = 1.0 - (_remainingSeconds / totalSeconds);
-          if ((_controller.value - progress).abs() > 0.001) {
-            _controller.value = progress;
-          }
         }
+      });
+    } else {
+      // Normal timer mode - count down
+      final totalSeconds = widget.durationMinutes * 60;
+      final currentProgress = 1.0 - (_remainingSeconds / totalSeconds);
+
+      if (!wasPaused) {
+        _controller.value = currentProgress;
+        _controller.forward();
       } else {
-        timer.cancel();
-        setState(() {
-          _isRunning = false;
-        });
-        _controller.value = 1.0;
-        widget.onComplete?.call();
+        // Resuming - continue from where we left off
+        _controller.forward();
       }
-    });
+
+      // Update more frequently for smoother animation (every 100ms)
+      _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        if (!_isRunning) {
+          timer.cancel();
+          return;
+        }
+
+        if (_remainingSeconds > 0) {
+          final now = DateTime.now();
+          final sessionStart = _sessionStartTime;
+          if (sessionStart != null) {
+            final elapsed = now.difference(sessionStart);
+            final newRemaining =
+                totalSeconds - (_totalElapsedSeconds + elapsed.inSeconds);
+
+            if (newRemaining != _remainingSeconds) {
+              setState(() {
+                _remainingSeconds = newRemaining.clamp(0, totalSeconds);
+                widget.onTick?.call(_remainingSeconds);
+              });
+            }
+
+            // Update controller smoothly
+            final progress = 1.0 - (_remainingSeconds / totalSeconds);
+            if ((_controller.value - progress).abs() > 0.001) {
+              _controller.value = progress;
+            }
+          }
+        } else {
+          timer.cancel();
+          setState(() {
+            _isRunning = false;
+          });
+          _controller.value = 1.0;
+          widget.onComplete?.call();
+        }
+      });
+    }
   }
 
   void _pauseTimer() {
@@ -286,7 +321,7 @@ class _CircularTimerState extends State<CircularTimer>
               ),
             ),
             const SizedBox(width: 12),
-            // Remaining time
+            // Remaining time (or elapsed time for stopwatch)
             Expanded(
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -304,13 +339,15 @@ class _CircularTimerState extends State<CircularTimer>
                 child: Column(
                   children: [
                     Icon(
-                      Icons.hourglass_empty,
+                      widget.isStopwatch ? Icons.timer : Icons.hourglass_empty,
                       size: 20,
                       color: AppTheme.xpCyan,
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '$remainingMinutes min',
+                      widget.isStopwatch
+                          ? '${(_remainingSeconds / 60).round()} min'
+                          : '$remainingMinutes min',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         inherit: false,
                         fontWeight: FontWeight.bold,
@@ -343,31 +380,47 @@ class _CircularTimerState extends State<CircularTimer>
                   boxShadow: AppTheme.softGlow,
                 ),
               ),
-              // Progress circle
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return SizedBox(
-                    width: AppConstants.circularTimerSize,
-                    height: AppConstants.circularTimerSize,
-                    child: CircularProgressIndicator(
-                      value: _controller.value,
-                      strokeWidth: AppConstants.timerStrokeWidth,
-                      backgroundColor: Theme.of(
-                        context,
-                      ).colorScheme.surfaceContainerHighest,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        Color.lerp(
+              // Progress circle (hidden for stopwatch)
+              if (!widget.isStopwatch)
+                AnimatedBuilder(
+                  animation: _controller,
+                  builder: (context, child) {
+                    return SizedBox(
+                      width: AppConstants.circularTimerSize,
+                      height: AppConstants.circularTimerSize,
+                      child: CircularProgressIndicator(
+                        value: _controller.value,
+                        strokeWidth: AppConstants.timerStrokeWidth,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color.lerp(
+                                AppTheme.primaryPurple,
+                                AppTheme.xpCyan,
+                                _controller.value,
+                              ) ??
                               AppTheme.primaryPurple,
-                              AppTheme.xpCyan,
-                              _controller.value,
-                            ) ??
-                            AppTheme.primaryPurple,
+                        ),
                       ),
+                    );
+                  },
+                ),
+              // For stopwatch, show a static circle with gradient
+              if (widget.isStopwatch)
+                Container(
+                  width: AppConstants.circularTimerSize,
+                  height: AppConstants.circularTimerSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryPurple.withValues(alpha: 0.3),
+                        AppTheme.secondaryBlue.withValues(alpha: 0.2),
+                      ],
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
               // Time display
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -387,7 +440,9 @@ class _CircularTimerState extends State<CircularTimer>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _formatTime(_remainingSeconds),
+                    widget.isStopwatch
+                        ? _formatTime(_remainingSeconds)
+                        : _formatTime(_remainingSeconds),
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
                       inherit: false,
                       color: _isRunning
@@ -401,11 +456,17 @@ class _CircularTimerState extends State<CircularTimer>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isRunning
-                        ? 'Running'
-                        : _isPaused
-                        ? 'Paused'
-                        : 'Ready',
+                    widget.isStopwatch
+                        ? (_isRunning
+                            ? 'Running'
+                            : _isPaused
+                                ? 'Paused'
+                                : 'Ready')
+                        : (_isRunning
+                            ? 'Running'
+                            : _isPaused
+                                ? 'Paused'
+                                : 'Ready'),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -418,19 +479,23 @@ class _CircularTimerState extends State<CircularTimer>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Cancel button (only show when running or paused)
+            // Cancel/Stop button (only show when running or paused)
             if (_isRunning || _isPaused) ...[
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.2),
+                  color: widget.isStopwatch
+                      ? AppTheme.primaryPurple.withValues(alpha: 0.2)
+                      : Colors.red.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
                   onPressed: _cancelTimer,
-                  icon: const Icon(Icons.cancel_outlined),
+                  icon: Icon(
+                    widget.isStopwatch ? Icons.stop : Icons.cancel_outlined,
+                  ),
                   iconSize: 32,
-                  color: Colors.red,
-                  tooltip: 'Cancel Quest',
+                  color: widget.isStopwatch ? AppTheme.primaryPurple : Colors.red,
+                  tooltip: widget.isStopwatch ? 'Stop' : 'Cancel Quest',
                 ),
               ),
               const SizedBox(width: 24),

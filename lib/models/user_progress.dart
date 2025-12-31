@@ -7,6 +7,8 @@ class UserProgress {
   int completedQuestsCount;
   int coins; // Coins earned from completing quests
   DateTime lastUpdate;
+  String? name; // User's display name
+  String? username; // User's username
 
   UserProgress({
     this.level = 1,
@@ -16,6 +18,8 @@ class UserProgress {
     this.completedQuestsCount = 0,
     this.coins = 0,
     DateTime? lastUpdate,
+    this.name,
+    this.username,
   }) : lastUpdate = lastUpdate ?? DateTime.now();
 
   /// XP needed for next level
@@ -46,6 +50,8 @@ class UserProgress {
     'completedQuestsCount': completedQuestsCount,
     'coins': coins,
     'lastUpdate': lastUpdate.toIso8601String(),
+    'name': name,
+    'username': username,
   };
 
   /// Create from JSON
@@ -59,6 +65,8 @@ class UserProgress {
     lastUpdate: json['lastUpdate'] != null
         ? DateTime.parse(json['lastUpdate'] as String)
         : DateTime.now(),
+    name: json['name'] as String?,
+    username: json['username'] as String?,
   );
 
   /// Copy with updated values
@@ -70,6 +78,8 @@ class UserProgress {
     int? completedQuestsCount,
     int? coins,
     DateTime? lastUpdate,
+    String? name,
+    String? username,
   }) => UserProgress(
     level: level ?? this.level,
     currentXP: currentXP ?? this.currentXP,
@@ -78,5 +88,7 @@ class UserProgress {
     completedQuestsCount: completedQuestsCount ?? this.completedQuestsCount,
     coins: coins ?? this.coins,
     lastUpdate: lastUpdate ?? this.lastUpdate,
+    name: name ?? this.name,
+    username: username ?? this.username,
   );
 }

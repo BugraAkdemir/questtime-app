@@ -21,6 +21,7 @@ class _QuestSelectionDialogState extends State<QuestSelectionDialog> {
   int _selectedDuration = 25;
   bool _useCustomDuration = false;
   bool _useCustomSubject = false;
+  bool _useStopwatch = false;
   final TextEditingController _customDurationController =
       TextEditingController();
   final TextEditingController _customSubjectController =
@@ -196,81 +197,156 @@ class _QuestSelectionDialogState extends State<QuestSelectionDialog> {
               ),
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [15, 25, 30, 45, 60].map((duration) {
-                final isSelected =
-                    _selectedDuration == duration && !_useCustomDuration;
-                return ChoiceChip(
-                  avatar: Icon(
-                    Icons.timer_outlined,
-                    size: 18,
-                    color: isSelected ? Colors.white : AppTheme.primaryPurple,
-                  ),
-                  label: Text('$duration min'),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
+            // Stopwatch option
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _useStopwatch
+                      ? AppTheme.primaryPurple
+                      : AppTheme.primaryPurple.withValues(alpha: 0.3),
+                  width: _useStopwatch ? 2 : 1,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                color: _useStopwatch
+                    ? AppTheme.primaryPurple.withValues(alpha: 0.1)
+                    : null,
+              ),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: _useStopwatch,
+                    onChanged: (value) {
                       setState(() {
-                        _selectedDuration = duration;
-                        _useCustomDuration = false;
-                      });
-                    }
-                  },
-                  selectedColor: AppTheme.primaryPurple,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : null,
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Checkbox(
-                  value: _useCustomDuration,
-                  onChanged: (value) {
-                    final newValue = value ?? false;
-                    if (newValue != _useCustomDuration) {
-                      setState(() {
-                        _useCustomDuration = newValue;
-                        if (_useCustomDuration &&
-                            _customDurationController.text.isEmpty) {
-                          _customDurationController.text = _selectedDuration
-                              .toString();
+                        _useStopwatch = value ?? false;
+                        if (_useStopwatch) {
+                          _useCustomDuration = false;
                         }
                       });
+                    },
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.timer,
+                              color: _useStopwatch
+                                  ? AppTheme.primaryPurple
+                                  : AppTheme.textSecondary,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              localizations.stopwatch,
+                              style: TextStyle(
+                                inherit: false,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: _useStopwatch
+                                    ? AppTheme.primaryPurple
+                                    : AppTheme.textPrimary,
+                                textBaseline: TextBaseline.alphabetic,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          localizations.stopwatchDescription,
+                          style: TextStyle(
+                            inherit: false,
+                            fontSize: 12,
+                            color: AppTheme.textSecondary,
+                            textBaseline: TextBaseline.alphabetic,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (!_useStopwatch) ...[
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [15, 25, 30, 45, 60].map((duration) {
+                  final isSelected =
+                      _selectedDuration == duration && !_useCustomDuration;
+                  return ChoiceChip(
+                    avatar: Icon(
+                      Icons.timer_outlined,
+                      size: 18,
+                      color: isSelected ? Colors.white : AppTheme.primaryPurple,
+                    ),
+                    label: Text('$duration min'),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          _selectedDuration = duration;
+                          _useCustomDuration = false;
+                        });
+                      }
+                    },
+                    selectedColor: AppTheme.primaryPurple,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Checkbox(
+                    value: _useCustomDuration,
+                    onChanged: (value) {
+                      final newValue = value ?? false;
+                      if (newValue != _useCustomDuration) {
+                        setState(() {
+                          _useCustomDuration = newValue;
+                          if (_useCustomDuration &&
+                              _customDurationController.text.isEmpty) {
+                            _customDurationController.text = _selectedDuration
+                                .toString();
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  Text(localizations.customDuration),
+                ],
+              ),
+              if (_useCustomDuration) ...[
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _customDurationController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: localizations.enterMinutes,
+                    border: const OutlineInputBorder(),
+                    hintText: localizations.isTurkish ? 'örn: 37' : 'e.g., 37',
+                    prefixIcon: const Icon(Icons.timer_outlined),
+                    labelStyle: const TextStyle(
+                      textBaseline: TextBaseline.alphabetic,
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.isEmpty) return;
+                    final minutes = int.tryParse(value);
+                    if (minutes != null && minutes > 0 && minutes <= 999) {
+                      setState(() {
+                        _selectedDuration = minutes;
+                      });
                     }
                   },
                 ),
-                Text(localizations.customDuration),
               ],
-            ),
-            if (_useCustomDuration) ...[
-              const SizedBox(height: 8),
-              TextField(
-                controller: _customDurationController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: localizations.enterMinutes,
-                  border: const OutlineInputBorder(),
-                  hintText: localizations.isTurkish ? 'örn: 37' : 'e.g., 37',
-                  prefixIcon: const Icon(Icons.timer_outlined),
-                  labelStyle: const TextStyle(
-                    textBaseline: TextBaseline.alphabetic,
-                  ),
-                ),
-                onChanged: (value) {
-                  if (value.isEmpty) return;
-                  final minutes = int.tryParse(value);
-                  if (minutes != null && minutes > 0 && minutes <= 999) {
-                    setState(() {
-                      _selectedDuration = minutes;
-                    });
-                  }
-                },
-              ),
             ],
           ],
         ),
@@ -306,11 +382,36 @@ class _QuestSelectionDialogState extends State<QuestSelectionDialog> {
                 questSubject = Subject.mathematics;
               }
 
-              // Validate duration
-              int duration;
-              if (_useCustomDuration) {
-                final customText = _customDurationController.text.trim();
-                if (customText.isEmpty) {
+              // Validate duration (not needed for stopwatch)
+              int duration = 0;
+              if (!_useStopwatch) {
+                if (_useCustomDuration) {
+                  final customText = _customDurationController.text.trim();
+                  if (customText.isEmpty) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(localizations.invalidDuration)),
+                      );
+                    }
+                    return;
+                  }
+                  final parsedDuration = int.tryParse(customText);
+                  if (parsedDuration == null ||
+                      parsedDuration <= 0 ||
+                      parsedDuration > 999) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(localizations.invalidNumber)),
+                      );
+                    }
+                    return;
+                  }
+                  duration = parsedDuration;
+                } else {
+                  duration = _selectedDuration;
+                }
+
+                if (duration <= 0 || duration > 999) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(localizations.invalidDuration)),
@@ -318,29 +419,6 @@ class _QuestSelectionDialogState extends State<QuestSelectionDialog> {
                   }
                   return;
                 }
-                final parsedDuration = int.tryParse(customText);
-                if (parsedDuration == null ||
-                    parsedDuration <= 0 ||
-                    parsedDuration > 999) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(localizations.invalidNumber)),
-                    );
-                  }
-                  return;
-                }
-                duration = parsedDuration;
-              } else {
-                duration = _selectedDuration;
-              }
-
-              if (duration <= 0 || duration > 999) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(localizations.invalidDuration)),
-                  );
-                }
-                return;
               }
 
               final quest = Quest(
@@ -349,6 +427,7 @@ class _QuestSelectionDialogState extends State<QuestSelectionDialog> {
                 durationMinutes: duration,
                 startTime: DateTime.now(),
                 customSubjectName: customSubjectName,
+                isStopwatch: _useStopwatch,
               );
               if (context.mounted) {
                 Navigator.of(context).pop(quest);

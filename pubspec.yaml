@@ -54,6 +54,11 @@ dependencies:
   # URL launcher for external links
   url_launcher: ^6.2.5
 
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+  cloud_firestore: ^5.4.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
