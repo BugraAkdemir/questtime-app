@@ -35,10 +35,14 @@ class FirestoreService {
     }
 
     try {
+      final json = progress.toJson();
+      debugPrint('Saving user progress to Firestore for user: $_userId');
+      debugPrint('Progress data: totalXP=${progress.totalXP}, level=${progress.level}');
       await _userProgressCollection.doc(_userId).set(
-            progress.toJson(),
+            json,
             SetOptions(merge: true),
           );
+      debugPrint('User progress saved successfully');
     } catch (e) {
       debugPrint('Error saving user progress: $e');
       rethrow;
@@ -186,6 +190,87 @@ class FirestoreService {
     } catch (e) {
       debugPrint('Error deleting user data: $e');
       rethrow;
+    }
+  }
+
+  /// Get top users for leaderboard (sorted by totalXP descending)
+  Future<List<Map<String, dynamic>>> getTopUsers({int limit = 100}) async {
+    try {
+      debugPrint('Getting top users from Firestore...');
+      debugPrint('Is authenticated: $isAuthenticated');
+
+      final snapshot = await _userProgressCollection
+          .orderBy('totalXP', descending: true)
+          .limit(limit)
+          .get();
+
+      debugPrint('Snapshot size: ${snapshot.docs.length}');
+
+      final users = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        debugPrint('User ${doc.id}: totalXP = ${data['totalXP']}');
+        return {
+          'userId': doc.id,
+          'name': data['name'] as String? ?? 'Anonymous',
+          'username': data['username'] as String?,
+          'totalXP': data['totalXP'] as int? ?? 0,
+          'level': data['level'] as int? ?? 1,
+          'completedQuestsCount': data['completedQuestsCount'] as int? ?? 0,
+        };
+      }).toList();
+
+      debugPrint('Returning ${users.length} users');
+      return users;
+    } catch (e, stackTrace) {
+      debugPrint('Error getting top users: $e');
+      debugPrint('Stack trace: $stackTrace');
+      return [];
+    }
+  }
+
+  /// Get current user's rank in leaderboard
+  Future<int> getUserRank() async {
+    if (!isAuthenticated) {
+      return -1;
+    }
+
+    try {
+      final userProgress = await loadUserProgress();
+      final userXP = userProgress.totalXP;
+
+      // Count users with higher XP
+      final snapshot = await _userProgressCollection
+          .where('totalXP', isGreaterThan: userXP)
+          .get();
+
+      // Rank is 1-based, so add 1
+      return snapshot.docs.length + 1;
+    } catch (e) {
+      debugPrint('Error getting user rank: $e');
+      return -1;
+    }
+  }
+
+  /// Get current user's leaderboard data
+  Future<Map<String, dynamic>?> getCurrentUserLeaderboardData() async {
+    if (!isAuthenticated) {
+      return null;
+    }
+
+    try {
+      final userProgress = await loadUserProgress();
+      final user = _auth.currentUser;
+      return {
+        'userId': _userId,
+        'name': userProgress.name ?? user?.email?.split('@')[0] ?? 'Anonymous',
+        'username': userProgress.username,
+        'totalXP': userProgress.totalXP,
+        'level': userProgress.level,
+        'completedQuestsCount': userProgress.completedQuestsCount,
+      };
+    } catch (e) {
+      debugPrint('Error getting current user leaderboard data: $e');
+      return null;
     }
   }
 }

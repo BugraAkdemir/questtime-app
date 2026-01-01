@@ -17,14 +17,17 @@
 
 ## 📖 About
 
-QuestTime is a modern, gamified study timer application designed to help students and learners stay focused and motivated. Transform your study sessions into engaging quests, earn XP, level up, and track your progress with beautiful statistics.
+QuestTime is a modern, gamified study timer application designed to help students and learners stay focused and motivated. Transform your study sessions into engaging quests, earn XP, level up, compete on the leaderboard, and track your progress with beautiful statistics.
 
 ### Key Highlights
 
 - 🎮 **Gamification**: Turn studying into a game with XP, levels, and achievements
 - ⏱️ **Focus Timer**: Beautiful circular timer with smooth animations
+- 🏆 **Leaderboard**: Compete with other users globally based on XP
+- ⏲️ **Stopwatch Mode**: Study without time limits, earn rewards based on actual time
 - 📊 **Progress Tracking**: Comprehensive statistics and progress visualization
 - 🎯 **Custom Quests**: Create personalized study quests with custom subjects
+- 🔐 **Cloud Sync**: Firebase integration for data synchronization across devices
 - 🌍 **Multilingual**: Full support for English and Turkish
 - 🎨 **Modern UI**: Clean, premium design following Material Design 3 principles
 - 📱 **Responsive**: Optimized for both phones and tablets
@@ -40,6 +43,8 @@ QuestTime is a modern, gamified study timer application designed to help student
 - Support for custom subject names
 - Multiple difficulty levels (Easy, Medium, Hard)
 - Flexible duration options (15, 30, 45, 60 minutes) or custom duration
+- **Stopwatch Mode**: Study without fixed duration, earn rewards based on actual time
+- Real-time XP and coin display during stopwatch sessions
 - XP calculation based on subject, difficulty, and duration
 
 #### ⏱️ Circular Timer
@@ -48,6 +53,15 @@ QuestTime is a modern, gamified study timer application designed to help student
 - Real-time progress tracking
 - Pause/Resume functionality
 - Visual feedback with Material Icons
+- Stopwatch mode support with elapsed time tracking
+
+#### 🏆 Leaderboard System
+- **Global Ranking**: Compete with users worldwide based on total XP
+- **Top 3 Podium**: Special display for top 3 users with medals (Gold, Silver, Bronze)
+- **Your Rank**: See your current position in the leaderboard
+- **Real-time Updates**: Pull-to-refresh to see latest rankings
+- **User Profiles**: View other users' names, usernames, levels, and XP
+- **Authentication Required**: Login to participate in leaderboard
 
 #### 📊 Progress Tracking
 - **XP System**: Earn experience points by completing quests
@@ -60,18 +74,29 @@ QuestTime is a modern, gamified study timer application designed to help student
   - Current level
   - Coins earned
 
+#### 🔐 Authentication & Cloud Sync
+- **Firebase Authentication**: Email/password login and signup
+- **Cloud Firestore**: Automatic data synchronization across devices
+- **Profile Management**: View and edit your name and username
+- **Optional Login**: Use the app without an account (with local storage)
+- **Data Safety**: Warning banner when not logged in
+- **Data Persistence**: Local data cleared on logout, restored on login
+
 #### 🏆 Gamification
 - **XP Rewards**: Earn XP based on quest parameters
 - **Coins System**: Collect coins from completed quests
 - **Level Progression**: Level up as you gain more XP
 - **Achievement Tracking**: Track your study milestones
+- **Competitive Element**: Leaderboard rankings
 
 #### 🎨 User Interface
-- **Modern Design**: Clean, premium aesthetic
+- **Modern Design**: Clean, premium aesthetic with vibrant colors
 - **Material Icons**: Consistent iconography throughout
 - **Dark/Light Theme**: Automatic theme switching based on system settings
+- **Enhanced Gradients**: Multi-color gradients for XP and achievements
+- **Premium Effects**: Soft glows, enhanced shadows, and smooth animations
 - **Responsive Layout**: Adapts beautifully to different screen sizes
-- **Smooth Animations**: Polished user experience
+- **Consolidated Menu**: All actions in a single, organized menu
 
 #### 🌍 Localization
 - **English**: Full English language support
@@ -112,7 +137,13 @@ Before you begin, ensure you have the following installed:
    flutter pub get
    ```
 
-3. **Run the app**
+3. **Firebase Setup** (Required for authentication and leaderboard)
+   - Follow the instructions in [FIREBASE_SETUP.md](FIREBASE_SETUP.md)
+   - Download `google-services.json` and place it in `android/app/`
+   - Configure Firestore security rules (see [FIRESTORE_RULES.md](FIRESTORE_RULES.md))
+   - Create Firestore index for leaderboard (see [FIRESTORE_RULES.md](FIRESTORE_RULES.md))
+
+4. **Run the app**
    ```bash
    flutter run
    ```
@@ -175,7 +206,7 @@ flutter build ios --release
 1. Tap the **"Start New Quest"** button on the home screen
 2. Select a **Subject** (or choose "Custom Subject" to enter your own)
 3. Choose a **Difficulty** level (Easy, Medium, Hard)
-4. Select a **Duration** (15, 30, 45, 60 minutes, or custom)
+4. Select a **Duration** (15, 30, 45, 60 minutes, custom, or **Stopwatch**)
 5. Tap **"Start Quest"** to begin your study session
 
 ### Using the Timer
@@ -183,11 +214,12 @@ flutter build ios --release
 - **Start**: The timer begins automatically when you start a quest
 - **Pause**: Tap the pause button to pause the timer
 - **Resume**: Tap the play button to continue
-- **Complete**: When the timer reaches zero, you'll earn XP and coins
+- **Complete**: When the timer reaches zero (or you stop a stopwatch), you'll earn XP and coins
+- **Stopwatch Mode**: Study without time limits, see real-time XP and coins as you study
 
 ### Viewing Statistics
 
-1. Navigate to the **Stats** screen from the home screen
+1. Navigate to the **Stats** screen from the menu
 2. View your:
    - Current level and XP progress
    - Total study time
@@ -195,6 +227,33 @@ flutter build ios --release
    - Average session duration
    - Total coins earned
 3. Toggle language (English/Turkish) using the language button
+
+### Leaderboard
+
+1. Navigate to the **Leaderboard** from the menu
+2. View:
+   - Top 3 users with special podium display (Gold, Silver, Bronze)
+   - Your current rank and position
+   - Complete leaderboard list
+3. Pull down to refresh and see latest rankings
+
+**Note**: You must be logged in to view and participate in the leaderboard.
+
+### Profile Management
+
+1. Navigate to **Profile** from the menu
+2. View and edit your:
+   - Name
+   - Username
+   - Email
+3. Changes are automatically synced to Firebase
+
+### Authentication
+
+- **Login**: Optional - you can use the app without logging in
+- **Sign Up**: Create an account with email, password, name, and username
+- **Data Sync**: Logged-in users' data is synced across devices via Firebase
+- **Warning**: A banner appears when not logged in, warning about potential data loss
 
 ### Market (Coming Soon)
 
@@ -236,16 +295,22 @@ questtime-app/
 │   ├── providers/          # State management (Provider pattern)
 │   │   ├── app_state_provider.dart
 │   │   ├── settings_provider.dart
-│   │   └── shop_provider.dart
+│   │   ├── shop_provider.dart
+│   │   └── auth_provider.dart
 │   │
 │   ├── screens/            # UI screens
 │   │   ├── home_screen.dart      # Main screen with timer
 │   │   ├── stats_screen.dart     # Statistics dashboard
-│   │   └── market_screen.dart    # Market/shop (coming soon)
+│   │   ├── market_screen.dart    # Market/shop (coming soon)
+│   │   ├── leaderboard_screen.dart # Global leaderboard
+│   │   ├── profile_screen.dart   # User profile management
+│   │   └── auth_screen.dart      # Login/signup screen
 │   │
 │   ├── services/          # Business logic services
 │   │   ├── storage_service.dart  # Local data persistence
-│   │   └── xp_service.dart      # XP and level calculations
+│   │   ├── firestore_service.dart     # Cloud Firestore operations
+│   │   ├── auth_service.dart  # Firebase Authentication
+│   │   └── xp_service.dart     # XP and level calculations
 │   │
 │   ├── theme/             # Theme configuration
 │   │   └── app_theme.dart # Light/dark themes
@@ -264,6 +329,8 @@ questtime-app/
 ├── build/                 # Build outputs (gitignored)
 ├── pubspec.yaml          # Dependencies and metadata
 ├── README.md             # This file
+├── FIREBASE_SETUP.md     # Firebase setup instructions
+├── FIRESTORE_RULES.md    # Firestore security rules
 └── DESIGN_SYSTEM.md      # Design system documentation
 ```
 
@@ -271,6 +338,8 @@ questtime-app/
 
 - **`lib/main.dart`**: Application entry point, provider setup, routing
 - **`lib/providers/app_state_provider.dart`**: Main state management for quests and progress
+- **`lib/services/firestore_service.dart`**: Cloud Firestore operations and leaderboard queries
+- **`lib/screens/leaderboard_screen.dart`**: Global leaderboard implementation
 - **`lib/widgets/circular_timer.dart`**: Animated circular timer implementation
 - **`lib/theme/app_theme.dart`**: Theme definitions (colors, typography, etc.)
 
@@ -285,7 +354,10 @@ questtime-app/
 ### State Management
 - **[Provider](https://pub.dev/packages/provider)** (^6.1.1) - State management solution
 
-### Storage
+### Backend & Storage
+- **[Firebase Core](https://pub.dev/packages/firebase_core)** (^2.24.2) - Firebase initialization
+- **[Firebase Auth](https://pub.dev/packages/firebase_auth)** (^4.16.0) - User authentication
+- **[Cloud Firestore](https://pub.dev/packages/cloud_firestore)** (^4.14.0) - Cloud database
 - **[SharedPreferences](https://pub.dev/packages/shared_preferences)** (^2.2.2) - Local data persistence
 
 ### UI & Animations
@@ -304,10 +376,12 @@ questtime-app/
 
 QuestTime follows a carefully crafted design system with:
 
-- **Color Palette**: Indigo purple (#6366F1) and Cyan (#06B6D4) as primary colors
+- **Color Palette**: Vibrant purple (#7C3AED) and Cyan (#06B6D4) as primary colors
 - **Typography**: Clean sans-serif fonts with clear hierarchy
 - **Spacing**: Consistent 8/12/16/24 spacing system
 - **Components**: Rounded cards (12-20px radius), soft shadows, premium feel
+- **Gradients**: Multi-color gradients for XP, achievements, and premium elements
+- **Effects**: Enhanced glows, shadows, and smooth animations
 
 For detailed design specifications, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
 
@@ -317,7 +391,7 @@ For detailed design specifications, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
 
 ### Android
 
-- **Package Name**: `com.example.study_quest`
+- **Package Name**: `com.akdbt.guesttime`
 - **Namespace**: `com.akdbt.guesttime`
 - **Min SDK**: 21
 - **Target SDK**: Latest
@@ -326,6 +400,11 @@ For detailed design specifications, see [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md).
 
 - **Bundle Identifier**: `com.example.studyQuest`
 - **Minimum iOS Version**: 13.0
+
+### Firebase
+
+- See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for complete setup instructions
+- See [FIRESTORE_RULES.md](FIRESTORE_RULES.md) for security rules and index configuration
 
 ---
 
@@ -425,6 +504,7 @@ limitations under the License.
 
 - Flutter team for the amazing framework
 - Material Design team for the design system
+- Firebase team for backend services
 - All open-source contributors whose packages made this project possible
 
 ---

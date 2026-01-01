@@ -64,14 +64,18 @@ service cloud.firestore {
 }
 ```
 
-**IMPORTANT:** Update security rules for production:
+**IMPORTANT:** Update security rules for production (with leaderboard support):
 
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // User Progress - users can read/write their own data, and read all for leaderboard
     match /userProgress/{userId} {
+      // Users can read and write their own data
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      // All authenticated users can read for leaderboard
+      allow read: if request.auth != null;
     }
     match /quests/{userId}/userQuests/{questId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -83,6 +87,19 @@ service cloud.firestore {
 }
 ```
 
+**Note for Leaderboard:** The `userProgress` collection allows all authenticated users to read data (for leaderboard functionality). Users can only write their own data.
+
+**Firestore Index Required:**
+- Go to Firestore Database > Indexes
+- Click on "Single field" tab (NOT composite!)
+- Click "Add a single-field index"
+- Collection: `userProgress`
+- Field: `totalXP`
+- Order: `Descending`
+- Click "Create"
+
+**Important:** Use **Single field index**, not composite index. If you see "this index is not necessary" warning, you're trying to create a composite index when you only need a single field index.
+
 ## 7. Running the Application
 
 1. Run `flutter pub get` command (already done)
@@ -93,11 +110,16 @@ service cloud.firestore {
 
 - The `google-services.json` file for Android **must** be in the `android/app/` folder
 - The `GoogleService-Info.plist` file for iOS must be added to the `ios/Runner/` folder in Xcode
+- **Important**: `google-services.json` contains sensitive information and should NOT be tracked in Git (already added to `.gitignore`)
 - On first run, Firebase connection will be established and users will be able to register and login
 - User data (XP, quests, daily quests) will be stored in Firebase
+- Login is optional - the app works with local storage if not logged in
+- Leaderboard feature requires authentication
 
 ## Troubleshooting
 
 - **"Default FirebaseApp is not initialized"** error: Make sure the `google-services.json` file is in the correct location
 - **"MissingPluginException"** error: Run `flutter clean` and `flutter pub get` commands
 - **Authentication error**: Make sure Email/Password authentication is enabled in Firebase Console
+- **Leaderboard shows empty**: Make sure Firestore index is created and security rules are updated (see [FIRESTORE_RULES.md](FIRESTORE_RULES.md))
+- **"No matching client found for package name"** error: Ensure the package name in `google-services.json` matches `com.akdbt.guesttime`

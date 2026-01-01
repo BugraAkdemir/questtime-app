@@ -11,22 +11,23 @@
 ## Color Palette
 
 ### Primary Colors
-- **Primary Purple/Indigo:** `#6366F1` (Indigo-500)
-  - Light: `#818CF8` (Indigo-400)
-  - Dark: `#4F46E5` (Indigo-600)
-  - Usage: Primary actions, selected states, focus elements
+- **Primary Purple/Violet:** `#7C3AED` (Violet-600 - more vibrant)
+  - Light: `#8B5CF6` (Violet-500)
+  - Dark: `#6D28D9` (Violet-700)
+  - Usage: Primary actions, selected states, focus elements, app branding
 
 ### Secondary Colors
-- **Soft Blue:** `#60A5FA` (Blue-400)
-  - Light: `#93C5FD` (Blue-300)
-  - Dark: `#3B82F6` (Blue-500)
-  - Usage: Secondary accents, informational elements
+- **Soft Blue:** `#3B82F6` (Blue-500 - more vibrant)
+  - Light: `#60A5FA` (Blue-400)
+  - Dark: `#2563EB` (Blue-600)
+  - Usage: Secondary accents, informational elements, gradients
 
 ### XP / Reward Colors
 - **Neon Green:** `#10B981` (Emerald-500)
 - **Cyan:** `#06B6D4` (Cyan-500)
 - **Neon:** `#34D399` (Emerald-400)
-- Usage: XP displays, rewards, achievements, positive feedback
+- **Gold:** `#F59E0B` (Amber-500) - New for achievements
+- Usage: XP displays, rewards, achievements, positive feedback, leaderboard medals
 
 ### Background Colors
 - **Background:** `#0A0E27` (Deep navy - near-black)
@@ -137,11 +138,14 @@ Consistent 4px base unit:
 ### Buttons
 
 #### Primary Button (Elevated)
-- Background: Primary purple gradient
+- Background: Primary purple gradient (purple → light purple → blue)
 - Text: White, Semi-bold (600)
 - Padding: 32px horizontal, 16px vertical
 - Border radius: 12px (MD)
-- Elevation: 0 (flat design)
+- Elevation: 2 (with shadow)
+- Shadow: Primary purple with 30% opacity
+- Hover state: Lighter purple
+- Pressed state: Darker purple
 - Animation: 300ms ease-in-out
 
 #### Text Button
@@ -188,11 +192,17 @@ Consistent 4px base unit:
 ### XP Display
 
 #### XP Badge
-- Background: XP gradient (green to cyan)
+- Background: XP gradient (green → cyan → neon, 3-color gradient)
 - Border radius: 12px (MD)
-- Shadow: Soft glow
+- Shadow: Soft glow (enhanced, dual-layer)
 - Text: White, Bold
 - Padding: 12px horizontal, 8px vertical
+
+#### Leaderboard Podium
+- Top 3: Special medal colors (Gold, Silver, Bronze)
+- Podium base: Gradient with medal color
+- Shadow: Premium glow effect
+- Height: Variable (1st place tallest)
 
 ---
 
@@ -247,12 +257,27 @@ Consistent 4px base unit:
 - Progress bar
 - Stats grid (2 columns)
 - Quest history list
+- Language toggle button
 
 **Principles:**
 - Focus on trends, not number overload
 - Streak and total time visible
 - Simple charts or bars
 - Clean, scannable layout
+
+### Leaderboard Screen
+
+**Layout:**
+- Current user rank card (if logged in)
+- Top 3 podium (Gold, Silver, Bronze medals)
+- Complete leaderboard list
+- Pull-to-refresh support
+
+**Principles:**
+- Top 3 prominently displayed with special design
+- User's own rank highlighted
+- Clear visual hierarchy
+- Real-time updates
 
 ---
 
@@ -276,11 +301,13 @@ Consistent 4px base unit:
 - Faster to understand and use
 - Cleaner, more professional appearance
 
-### Why Purple/Indigo Primary?
+### Why Purple/Violet Primary?
+- More vibrant than indigo (#7C3AED vs #6366F1)
 - Associated with focus and concentration
 - Not aggressive or childish
 - Modern, tech-forward feeling
 - Good contrast on dark backgrounds
+- Creates premium, energetic feel
 
 ### Why Green/Cyan for XP?
 - Positive, rewarding feeling
@@ -317,8 +344,8 @@ All design tokens are available in `lib/theme/app_theme.dart`:
 - Spacing: `AppTheme.spacingMD`, `AppTheme.spacingLG`, etc.
 - Radius: `AppTheme.radiusMD`, `AppTheme.radiusLG`, etc.
 - Animations: `AppTheme.animationNormal`, `AppTheme.animationCurve`
-- Gradients: `AppTheme.xpGradient`, `AppTheme.primaryGradient`
-- Shadows: `AppTheme.softGlow`, `AppTheme.cardShadow`
+- Gradients: `AppTheme.xpGradient`, `AppTheme.primaryGradient`, `AppTheme.goldGradient`
+- Shadows: `AppTheme.softGlow`, `AppTheme.premiumGlow`, `AppTheme.cardShadow`, `AppTheme.elevatedShadow`
 
 Use these tokens consistently throughout the app for maintainability and consistency.
 

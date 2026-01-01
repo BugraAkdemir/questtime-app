@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/market_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/leaderboard_screen.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/shop_provider.dart';
@@ -57,6 +58,7 @@ class StudyQuestApp extends StatelessWidget {
               '/stats': (context) => const StatsScreen(),
               '/market': (context) => const MarketScreen(),
               '/profile': (context) => const ProfileScreen(),
+              '/leaderboard': (context) => const LeaderboardScreen(),
             },
           );
         },

@@ -190,61 +190,20 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Consumer<SettingsProvider>(
           builder: (context, settings, child) {
             final localizations = AppLocalizations(settings.language);
-            return Text(localizations.appTitle);
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.school, color: AppTheme.primaryPurple, size: 28),
+                const SizedBox(width: 8),
+                Text(
+                  localizations.appTitle,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            );
           },
         ),
         actions: [
-          Consumer<AppStateProvider>(
-            builder: (context, appState, child) {
-              final localizations = AppLocalizations(
-                Provider.of<SettingsProvider>(context, listen: false).language,
-              );
-              return IconButton(
-                icon: const Icon(Icons.store),
-                tooltip: localizations.isTurkish ? 'Market' : 'Market',
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusLG),
-                      ),
-                      title: Row(
-                        children: [
-                          Icon(
-                            Icons.rocket_launch,
-                            color: AppTheme.primaryPurple,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            localizations.isTurkish ? 'Yakında' : 'Coming Soon',
-                          ),
-                        ],
-                      ),
-                      content: Text(
-                        localizations.isTurkish
-                            ? 'Market özelliği yakında eklenecek!'
-                            : 'Market feature coming soon!',
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(localizations.ok),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.leaderboard),
-            onPressed: () {
-              Navigator.pushNamed(context, '/stats');
-            },
-            tooltip: 'Stats',
-          ),
           Consumer<SettingsProvider>(
             builder: (context, settings, child) {
               final localizations = AppLocalizations(settings.language);
@@ -253,57 +212,153 @@ class _HomeScreenState extends State<HomeScreen> {
                 listen: false,
               );
               return PopupMenuButton<String>(
-                icon: const Icon(Icons.account_circle),
-                tooltip: localizations.logout,
+                icon: const Icon(Icons.more_vert),
+                tooltip: localizations.isTurkish ? 'Menü' : 'Menu',
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMD),
+                ),
                 onSelected: (value) async {
-                  if (value == 'profile') {
-                    Navigator.pushNamed(context, '/profile');
-                  } else if (value == 'logout') {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppTheme.radiusLG,
+                  switch (value) {
+                    case 'stats':
+                      Navigator.pushNamed(context, '/stats');
+                      break;
+                    case 'leaderboard':
+                      Navigator.pushNamed(context, '/leaderboard');
+                      break;
+                    case 'market':
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLG,
+                            ),
                           ),
+                          title: Row(
+                            children: [
+                              Icon(
+                                Icons.rocket_launch,
+                                color: AppTheme.primaryPurple,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                localizations.isTurkish
+                                    ? 'Yakında'
+                                    : 'Coming Soon',
+                              ),
+                            ],
+                          ),
+                          content: Text(
+                            localizations.isTurkish
+                                ? 'Market özelliği yakında eklenecek!'
+                                : 'Market feature coming soon!',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: Text(localizations.ok),
+                            ),
+                          ],
                         ),
-                        title: Text(localizations.logout),
-                        content: Text(
-                          localizations.isTurkish
-                              ? 'Çıkış yapmak istediğinize emin misiniz?'
-                              : 'Are you sure you want to logout?',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(false),
-                            child: Text(localizations.cancel),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.of(context).pop(true),
-                            child: Text(localizations.logout),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true && mounted) {
-                      // Clear local data before logout
-                      final appStateProvider = Provider.of<AppStateProvider>(
-                        context,
-                        listen: false,
                       );
-                      await appStateProvider.clearLocalData();
-                      await authProvider.signOut();
-                      // Navigation will be handled by main.dart
-                    }
+                      break;
+                    case 'profile':
+                      Navigator.pushNamed(context, '/profile');
+                      break;
+                    case 'logout':
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppTheme.radiusLG,
+                            ),
+                          ),
+                          title: Text(localizations.logout),
+                          content: Text(
+                            localizations.isTurkish
+                                ? 'Çıkış yapmak istediğinize emin misiniz?'
+                                : 'Are you sure you want to logout?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: Text(localizations.cancel),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: Text(localizations.logout),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirm == true && mounted) {
+                        // Clear local data before logout
+                        final appStateProvider = Provider.of<AppStateProvider>(
+                          context,
+                          listen: false,
+                        );
+                        await appStateProvider.clearLocalData();
+                        await authProvider.signOut();
+                        // Navigation will be handled by main.dart
+                      }
+                      break;
                   }
                 },
                 itemBuilder: (context) => [
                   PopupMenuItem(
+                    value: 'stats',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.bar_chart,
+                          size: 20,
+                          color: AppTheme.primaryPurple,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(localizations.stats),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'leaderboard',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.emoji_events,
+                          size: 20,
+                          color: AppTheme.primaryPurple,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(localizations.leaderboard),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'market',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.store,
+                          size: 20,
+                          color: AppTheme.primaryPurple,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(localizations.isTurkish ? 'Market' : 'Market'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
                     value: 'profile',
                     child: Row(
                       children: [
-                        const Icon(Icons.person, size: 20),
-                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.person,
+                          size: 20,
+                          color: AppTheme.primaryPurple,
+                        ),
+                        const SizedBox(width: 12),
                         Text(localizations.profile),
                       ],
                     ),
@@ -312,9 +367,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     value: 'logout',
                     child: Row(
                       children: [
-                        const Icon(Icons.logout, size: 20),
-                        const SizedBox(width: 8),
-                        Text(localizations.logout),
+                        Icon(
+                          Icons.logout,
+                          size: 20,
+                          color: Colors.red.shade600,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          localizations.logout,
+                          style: TextStyle(color: Colors.red.shade600),
+                        ),
                       ],
                     ),
                   ),

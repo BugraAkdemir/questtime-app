@@ -17,20 +17,21 @@ import 'package:flutter/material.dart';
 class AppTheme {
   // ========== Color Palette ==========
 
-  // Primary Accent - Purple/Indigo
-  static const Color primaryPurple = Color(0xFF6366F1); // Indigo-500
-  static const Color primaryPurpleLight = Color(0xFF818CF8); // Indigo-400
-  static const Color primaryPurpleDark = Color(0xFF4F46E5); // Indigo-600
+  // Primary Accent - Vibrant Purple/Indigo
+  static const Color primaryPurple = Color(0xFF7C3AED); // Violet-600 (more vibrant)
+  static const Color primaryPurpleLight = Color(0xFF8B5CF6); // Violet-500
+  static const Color primaryPurpleDark = Color(0xFF6D28D9); // Violet-700
 
   // Secondary Accent - Soft Blue
-  static const Color secondaryBlue = Color(0xFF60A5FA); // Blue-400
-  static const Color secondaryBlueLight = Color(0xFF93C5FD); // Blue-300
-  static const Color secondaryBlueDark = Color(0xFF3B82F6); // Blue-500
+  static const Color secondaryBlue = Color(0xFF3B82F6); // Blue-500 (more vibrant)
+  static const Color secondaryBlueLight = Color(0xFF60A5FA); // Blue-400
+  static const Color secondaryBlueDark = Color(0xFF2563EB); // Blue-600
 
-  // XP / Reward - Neon Green/Cyan
+  // XP / Reward - Vibrant Green/Cyan
   static const Color xpGreen = Color(0xFF10B981); // Emerald-500
   static const Color xpCyan = Color(0xFF06B6D4); // Cyan-500
   static const Color xpNeon = Color(0xFF34D399); // Emerald-400
+  static const Color xpGold = Color(0xFFF59E0B); // Amber-500 (for achievements)
 
   // Background - Near-black / Deep Navy
   static const Color background = Color(0xFF0A0E27); // Deep navy
@@ -91,26 +92,34 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: background,
       appBarTheme: AppBarTheme(
-        backgroundColor: surface,
+        backgroundColor: surface.withValues(alpha: 0.95),
         elevation: 0,
         centerTitle: true,
         foregroundColor: textPrimary,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         titleTextStyle: const TextStyle(
           inherit: false,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
           color: textPrimary,
           letterSpacing: -0.5,
           textBaseline: TextBaseline.alphabetic,
+        ),
+        iconTheme: const IconThemeData(
+          color: textPrimary,
+          size: 24,
         ),
       ),
       cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
+        shadowColor: Colors.black.withValues(alpha: 0.1),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLG),
         ),
         margin: EdgeInsets.zero,
+        surfaceTintColor: Colors.transparent,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -123,7 +132,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMD),
           ),
-          elevation: 0,
+          elevation: 2,
+          shadowColor: primaryPurple.withValues(alpha: 0.3),
           textStyle: const TextStyle(
             inherit: false,
             fontSize: 16,
@@ -131,6 +141,16 @@ class AppTheme {
             letterSpacing: 0.5,
             textBaseline: TextBaseline.alphabetic,
           ),
+        ).copyWith(
+          backgroundColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.pressed)) {
+              return primaryPurpleDark;
+            }
+            if (states.contains(MaterialState.hovered)) {
+              return primaryPurpleLight;
+            }
+            return primaryPurple;
+          }),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -251,17 +271,23 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: const Color(0xFFF9FAFB),
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.white.withValues(alpha: 0.95),
         elevation: 0,
         centerTitle: true,
         foregroundColor: const Color(0xFF111827),
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         titleTextStyle: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
           color: const Color(0xFF111827),
           letterSpacing: -0.5,
           inherit: false,
           textBaseline: TextBaseline.alphabetic,
+        ),
+        iconTheme: const IconThemeData(
+          color: Color(0xFF111827),
+          size: 24,
         ),
       ),
       cardTheme: CardThemeData(
@@ -283,7 +309,8 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMD),
           ),
-          elevation: 0,
+          elevation: 2,
+          shadowColor: primaryPurple.withValues(alpha: 0.3),
           textStyle: const TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -291,6 +318,16 @@ class AppTheme {
             inherit: false,
             textBaseline: TextBaseline.alphabetic,
           ),
+        ).copyWith(
+          backgroundColor: MaterialStateProperty.resolveWith((states) {
+            if (states.contains(MaterialState.pressed)) {
+              return primaryPurpleDark;
+            }
+            if (states.contains(MaterialState.hovered)) {
+              return primaryPurpleLight;
+            }
+            return primaryPurple;
+          }),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
@@ -393,21 +430,31 @@ class AppTheme {
 
   /// Primary gradient for XP/rewards
   static LinearGradient get xpGradient => const LinearGradient(
-    colors: [xpGreen, xpCyan],
+    colors: [xpGreen, xpCyan, xpNeon],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+    stops: [0.0, 0.5, 1.0],
   );
 
-  /// Primary accent gradient
+  /// Primary accent gradient (more vibrant)
   static LinearGradient get primaryGradient => const LinearGradient(
-    colors: [primaryPurple, primaryPurpleLight],
+    colors: [primaryPurple, primaryPurpleLight, secondaryBlue],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
+    stops: [0.0, 0.5, 1.0],
   );
 
   /// Secondary accent gradient
   static LinearGradient get secondaryGradient => const LinearGradient(
-    colors: [secondaryBlue, secondaryBlueLight],
+    colors: [secondaryBlue, secondaryBlueLight, xpCyan],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    stops: [0.0, 0.5, 1.0],
+  );
+
+  /// Premium gold gradient for achievements
+  static LinearGradient get goldGradient => const LinearGradient(
+    colors: [xpGold, Color(0xFFFBBF24), Color(0xFFFCD34D)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -420,8 +467,27 @@ class AppTheme {
   /// Soft glow for focus elements (timer, selected items)
   static List<BoxShadow> get softGlow => [
     BoxShadow(
-      color: primaryPurple.withValues(alpha: 0.2),
-      blurRadius: 16,
+      color: primaryPurple.withValues(alpha: 0.3),
+      blurRadius: 20,
+      spreadRadius: 2,
+    ),
+    BoxShadow(
+      color: primaryPurple.withValues(alpha: 0.1),
+      blurRadius: 40,
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// Enhanced glow for premium elements
+  static List<BoxShadow> get premiumGlow => [
+    BoxShadow(
+      color: primaryPurple.withValues(alpha: 0.4),
+      blurRadius: 24,
+      spreadRadius: 4,
+    ),
+    BoxShadow(
+      color: secondaryBlue.withValues(alpha: 0.2),
+      blurRadius: 48,
       spreadRadius: 0,
     ),
   ];
@@ -429,10 +495,26 @@ class AppTheme {
   /// Subtle shadow for cards
   static List<BoxShadow> get cardShadow => [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
-      blurRadius: 8,
+      color: Colors.black.withValues(alpha: 0.15),
+      blurRadius: 12,
+      spreadRadius: 0,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 6,
       spreadRadius: 0,
       offset: const Offset(0, 2),
+    ),
+  ];
+
+  /// Soft shadow for elevated elements
+  static List<BoxShadow> get elevatedShadow => [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.2),
+      blurRadius: 16,
+      spreadRadius: 0,
+      offset: const Offset(0, 6),
     ),
   ];
 
