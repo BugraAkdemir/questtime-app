@@ -47,3 +47,9 @@ app.*.map.json
 # Firebase configuration files (contains sensitive data)
 **/google-services.json
 **/GoogleService-Info.plist
+
+# Android signing keys (contains sensitive data)
+**/key.properties
+**/*.jks
+**/*.keystore
+upload-keystore.jks

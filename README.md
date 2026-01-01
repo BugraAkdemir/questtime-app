@@ -173,17 +173,46 @@ flutter build apk --debug
 ```
 Output: `build/app/outputs/flutter-apk/app-debug.apk`
 
-#### Release APK
+#### Release APK (for Samsung Galaxy Store)
 ```bash
 flutter build apk --release
 ```
 Output: `build/app/outputs/flutter-apk/app-release.apk`
 
-#### App Bundle (for Play Store)
+**Important**: Before building a release APK, you need to set up signing:
+
+1. **Create a keystore** (one-time setup):
+   ```bash
+   keytool -genkey -v -keystore android/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+   ```
+   - Enter a strong password (save it securely!)
+   - Fill in your information when prompted
+   - **Important**: Keep this keystore file safe - you'll need it for all future updates!
+
+2. **Create key.properties file**:
+   ```bash
+   cp android/key.properties.template android/key.properties
+   ```
+   Then edit `android/key.properties` and fill in your actual values:
+   ```properties
+   storePassword=YOUR_KEYSTORE_PASSWORD
+   keyPassword=YOUR_KEY_PASSWORD
+   keyAlias=upload
+   storeFile=../upload-keystore.jks
+   ```
+
+3. **Build release APK**:
+   ```bash
+   flutter build apk --release
+   ```
+
+#### App Bundle (for Google Play Store)
 ```bash
 flutter build appbundle --release
 ```
 Output: `build/app/outputs/bundle/release/app-release.aab`
+
+**Note**: Same signing setup as above is required.
 
 ### iOS (macOS Required)
 
@@ -196,6 +225,69 @@ flutter build ios --release
 - Xcode installed
 - Valid Apple Developer account (for device testing)
 - CocoaPods installed (`sudo gem install cocoapods`)
+
+---
+
+## 🚀 Publishing to App Stores
+
+### Samsung Galaxy Store
+
+1. **Prepare Release Build**:
+   - Follow the release APK building steps above
+   - Ensure you have a valid signing key configured
+
+2. **Required Materials**:
+   - Release APK (`app-release.apk`)
+   - App icon: 512x512 PNG
+   - Screenshots: At least 2 (recommended: 4-8)
+     - Phone: 1080x1920 or 1440x2560
+   - App description (Turkish and English)
+   - Privacy policy URL (required for Firebase apps)
+   - Age rating information
+
+3. **Samsung Developer Account**:
+   - Register at https://seller.samsungapps.com/
+   - Complete developer registration (one-time fee may apply)
+
+4. **Upload Process**:
+   - Log in to Samsung Seller Portal
+   - Click "Add New Application"
+   - Fill in app information:
+     - App name: QuestTime
+     - Package name: `com.akdbt.guesttime`
+     - Version: 3.0.0
+     - Version code: 300
+   - Upload APK file
+   - Complete store listing
+   - Submit for review (typically 3-7 business days)
+
+5. **Privacy Policy**:
+   - Since the app uses Firebase, a privacy policy is mandatory
+   - Create a simple privacy policy page and provide the URL
+   - Example content should mention:
+     - Data collection (email, username, study statistics)
+     - Firebase services usage
+     - Data storage and security
+
+### Google Play Store
+
+1. **Prepare App Bundle**:
+   ```bash
+   flutter build appbundle --release
+   ```
+
+2. **Google Play Console**:
+   - Create a developer account ($25 one-time fee)
+   - Create a new app
+   - Upload the AAB file
+   - Complete store listing
+   - Set up pricing and distribution
+   - Submit for review
+
+**Important Notes**:
+- ⚠️ **Never commit** `key.properties` or `*.jks` files to version control
+- ⚠️ **Backup your keystore** - losing it means you can't update your app!
+- ⚠️ **Keep passwords secure** - store them in a password manager
 
 ---
 

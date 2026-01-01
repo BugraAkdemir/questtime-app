@@ -1,0 +1,12 @@
+{
+  "minimum_version_code": 302,
+  "update_required": false,
+  "update_url": "https://bugradev.com/release",
+  "latest_version": "3.0.0",
+  "latest_version_code": 302,
+  "release_notes": {
+    "tr": "Yeni özellikler ve hata düzeltmeleri",
+    "en": "New features and bug fixes"
+  }
+}
+

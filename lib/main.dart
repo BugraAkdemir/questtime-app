@@ -9,6 +9,8 @@ import 'screens/profile_screen.dart';
 import 'screens/leaderboard_screen.dart';
 import 'screens/achievements_screen.dart';
 import 'services/notification_service.dart';
+import 'services/version_check_service.dart';
+import 'widgets/update_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/settings_provider.dart';
@@ -27,6 +29,9 @@ void main() async {
 
   // Initialize notification service
   await NotificationService().initialize();
+
+  // Initialize version check service
+  await VersionCheckService.initialize();
 
   // Set up background message handler
   FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -69,7 +74,7 @@ class StudyQuestApp extends StatelessWidget {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.system, // Always follow system theme
-            home: const HomeScreen(),
+            home: const AppWithVersionCheck(),
             routes: {
               '/stats': (context) => const StatsScreen(),
               '/market': (context) => const MarketScreen(),
@@ -81,5 +86,62 @@ class StudyQuestApp extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+/// Widget that checks for app updates before showing the home screen
+class AppWithVersionCheck extends StatefulWidget {
+  const AppWithVersionCheck({super.key});
+
+  @override
+  State<AppWithVersionCheck> createState() => _AppWithVersionCheckState();
+}
+
+class _AppWithVersionCheckState extends State<AppWithVersionCheck> {
+  bool _isCheckingVersion = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkForUpdate();
+  }
+
+  Future<void> _checkForUpdate() async {
+    try {
+      final isUpdateRequired = await VersionCheckService.isUpdateRequired();
+
+      if (mounted) {
+        if (isUpdateRequired) {
+          // Show update dialog
+          await UpdateDialog.show(context);
+        }
+        setState(() {
+          _isCheckingVersion = false;
+        });
+      }
+    } catch (e) {
+      print('Error checking for update: $e');
+      if (mounted) {
+        setState(() {
+          _isCheckingVersion = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isCheckingVersion) {
+      // Show loading screen while checking
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      );
+    }
+
+    return const HomeScreen();
   }
 }

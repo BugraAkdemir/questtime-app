@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="QuestTime - Gamified Study Timer App - Download Latest Version">
+    <title>QuestTime - Download</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7C3AED;
+            --primary-dark: #6D28D9;
+            --secondary: #06B6D4;
+            --accent: #EC4899;
+            --success: #10B981;
+            --text: #1F2937;
+            --text-light: #6B7280;
+            --bg: #F9FAFB;
+            --card: #FFFFFF;
+            --border: #E5E7EB;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(124, 58, 237, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.3) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.5);
+            max-width: 650px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 50px 40px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .icon-wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 24px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .icon-wrapper i {
+            font-size: 48px;
+            color: white;
+        }
+
+        .header h1 {
+            position: relative;
+            z-index: 1;
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            position: relative;
+            z-index: 1;
+            font-size: 16px;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .version-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 32px;
+            text-align: center;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .version-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .version-card h2 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .version-card .version-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -1px;
+        }
+
+        .download-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 18px 36px;
+            border-radius: 16px;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 700;
+            box-shadow:
+                0 10px 30px rgba(124, 58, 237, 0.4),
+                0 0 0 0 rgba(124, 58, 237, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            max-width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .download-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 15px 40px rgba(124, 58, 237, 0.5),
+                0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn i {
+            font-size: 22px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .download-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 32px;
+            border-top: 2px solid var(--border);
+        }
+
+        .features h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .features h3 i {
+            color: var(--primary);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .feature-item:hover {
+            background: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+        }
+
+        .feature-item i {
+            font-size: 20px;
+            color: var(--primary);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .feature-item span {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .warning {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-left: 4px solid #F59E0B;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 32px;
+            font-size: 14px;
+            color: #92400E;
+        }
+
+        .warning-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .warning-header i {
+            font-size: 20px;
+        }
+
+        .warning p {
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            background: var(--bg);
+            color: var(--text-light);
+            font-size: 14px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: var(--primary-dark);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--success);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .header {
+                padding: 40px 30px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .content {
+                padding: 30px 24px;
+            }
+
+            .download-btn {
+                padding: 16px 28px;
+                font-size: 16px;
+            }
+
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .version-card .version-number {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="icon-wrapper">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <h1>QuestTime</h1>
+            <p>Gamified Study Timer App</p>
+        </div>
+
+        <div class="content">
+            <div class="version-card">
+                <h2>Latest Version</h2>
+                <div class="version-number">v3.0.0</div>
+                <div class="badge">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Latest Release
+                </div>
+            </div>
+
+            <div class="download-section">
+                <a href="app.apk" class="download-btn" download="QuestTime.apk">
+                    <i class="bi bi-download"></i>
+                    <span>Download APK</span>
+                </a>
+            </div>
+
+            <div class="features">
+                <h3>
+                    <i class="bi bi-stars"></i>
+                    Key Features
+                </h3>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <i class="bi bi-trophy-fill"></i>
+                        <span>XP & Leveling System</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-fire"></i>
+                        <span>Daily Streak Tracking</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-award-fill"></i>
+                        <span>Achievement System</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-trophy"></i>
+                        <span>Global Leaderboard</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Progress Analytics</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-stopwatch"></i>
+                        <span>Stopwatch Mode</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-cloud-check"></i>
+                        <span>Cloud Sync</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="bi bi-palette"></i>
+                        <span>Modern UI Design</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning">
+                <div class="warning-header">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Installation Instructions</strong>
+                </div>
+                <p>After downloading, enable "Install from Unknown Sources" in your Android settings, then open the APK
+                    file to install.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 QuestTime by <a href="https://bugradev.com">Bugra Akdemir</a></p>
+        </div>
+    </div>
+</body>
+
+</html>

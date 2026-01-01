@@ -172,4 +172,17 @@ class AppLocalizations {
   String get achievementNotification => isTurkish
       ? 'Yeni bir başarım kazandın!'
       : 'You earned a new achievement!';
+
+  // Update strings
+  String get updateRequired => isTurkish ? 'Güncelleme Gerekli' : 'Update Required';
+  String get updateRequiredMessage => isTurkish
+      ? 'Uygulamanın yeni bir sürümü mevcut. En iyi deneyim için lütfen uygulamayı güncelleyin.'
+      : 'A new version of the app is available. Please update the app for the best experience.';
+  String get updateRequiredInfo => isTurkish
+      ? 'Eski sürümler artık desteklenmiyor. Lütfen en son sürümü indirin.'
+      : 'Older versions are no longer supported. Please download the latest version.';
+  String get downloadLatestVersion =>
+      isTurkish ? 'Son Sürümü İndir' : 'Download Latest Version';
+  String get updateNow => isTurkish ? 'Güncelle' : 'Update Now';
+  String get updateLater => isTurkish ? 'Daha Sonra' : 'Later';
 }
