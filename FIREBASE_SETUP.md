@@ -49,7 +49,19 @@ QuestTime application uses Firebase Authentication and Cloud Firestore. Follow t
 4. Select Cloud Firestore location (e.g., `europe-west1`)
 5. Click the "Enable" button
 
-## 6. Firestore Security Rules (Test Mode)
+## 6. Enable Firebase Cloud Messaging (FCM)
+
+1. Select "Cloud Messaging" from the left menu in Firebase Console
+2. FCM is automatically enabled when you create a Firebase project
+3. For Android: No additional setup needed (uses `google-services.json`)
+4. For iOS: You need to upload your APNs certificate or APNs key:
+   - Go to Project Settings > Cloud Messaging
+   - Under "Apple app configuration", upload your APNs certificate or key
+   - This is required for push notifications on iOS devices
+
+**Note:** The app will request notification permissions when first launched. Users can grant or deny these permissions.
+
+## 7. Firestore Security Rules (Test Mode)
 
 In test mode, Firestore starts with these rules:
 
@@ -100,11 +112,60 @@ service cloud.firestore {
 
 **Important:** Use **Single field index**, not composite index. If you see "this index is not necessary" warning, you're trying to create a composite index when you only need a single field index.
 
-## 7. Running the Application
+## 8. Configure Daily Study Reminders (Optional)
+
+To send daily study reminders to users, you have two options:
+
+### Option A: Using Firebase Cloud Functions (Recommended)
+
+1. Install Firebase CLI: `npm install -g firebase-tools`
+2. Initialize Functions in your project: `firebase init functions`
+3. Create a scheduled function to send daily reminders
+4. Deploy: `firebase deploy --only functions`
+
+### Option B: Using Firebase Console (Manual)
+
+1. Go to Cloud Messaging > Send test message
+2. Create notification campaigns for daily reminders
+3. Schedule them to send at specific times
+
+**Note:** The app is already configured to receive FCM notifications. You just need to set up the sending mechanism.
+
+## 9. Running the Application
 
 1. Run `flutter pub get` command (already done)
 2. Make sure the `google-services.json` file is in the `android/app/` folder
 3. Run the application: `flutter run`
+
+## New Features in QuestTime
+
+### Streak System
+- Tracks daily study streaks automatically
+- Streak is updated when users complete quests
+- Streak data is stored in `userProgress.currentStreak` and `userProgress.lastStudyDate`
+- Displayed on the home screen
+
+### Achievements System
+- 20+ predefined achievements including:
+  - Streak achievements (7, 30, 50, 100 days)
+  - Subject-specific achievements (10 hours per subject)
+  - Total study time achievements (10, 50, 100 hours)
+  - Quest count achievements (10, 50, 100 quests)
+- Achievements are automatically checked when quests are completed
+- Unlocked achievements award XP and coins
+- View all achievements in the Achievements screen (accessible from menu)
+
+### Subject-Specific Tracking
+- Tracks study time for each subject separately
+- Stored in `userProgress.subjectStudyMinutes` map
+- Used for subject-specific achievements
+- Automatically updated when quests are completed
+
+### Push Notifications
+- Firebase Cloud Messaging (FCM) integrated
+- App requests notification permissions on first launch
+- Ready for daily study reminders
+- Achievement unlock notifications can be configured
 
 ## Notes
 
@@ -112,9 +173,11 @@ service cloud.firestore {
 - The `GoogleService-Info.plist` file for iOS must be added to the `ios/Runner/` folder in Xcode
 - **Important**: `google-services.json` contains sensitive information and should NOT be tracked in Git (already added to `.gitignore`)
 - On first run, Firebase connection will be established and users will be able to register and login
-- User data (XP, quests, daily quests) will be stored in Firebase
+- User data (XP, quests, daily quests, streaks, achievements) will be stored in Firebase
 - Login is optional - the app works with local storage if not logged in
 - Leaderboard feature requires authentication
+- **Notification permissions**: Users will be prompted to allow notifications on first launch. This is required for daily reminders and achievement notifications.
+- **FCM Token**: The app automatically retrieves and stores the FCM token. This token is used to send push notifications to specific devices.
 
 ## Troubleshooting
 
@@ -123,3 +186,13 @@ service cloud.firestore {
 - **Authentication error**: Make sure Email/Password authentication is enabled in Firebase Console
 - **Leaderboard shows empty**: Make sure Firestore index is created and security rules are updated (see [FIRESTORE_RULES.md](FIRESTORE_RULES.md))
 - **"No matching client found for package name"** error: Ensure the package name in `google-services.json` matches `com.akdbt.guesttime`
+- **Notifications not working**:
+  - Check that FCM is enabled in Firebase Console
+  - For iOS: Make sure APNs certificate/key is uploaded
+  - Check that notification permissions are granted on the device
+  - Verify FCM token is being retrieved (check app logs)
+- **Streak not updating**: Make sure quests are being completed (not cancelled). Only completed quests update the streak.
+- **Achievements not unlocking**:
+  - Verify that quests are being completed successfully
+  - Check Firestore to ensure user progress is being saved
+  - Ensure the achievement requirements are met (e.g., 10 hours = 600 minutes)

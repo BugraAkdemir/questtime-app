@@ -7,14 +7,30 @@ import 'screens/stats_screen.dart';
 import 'screens/market_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/leaderboard_screen.dart';
+import 'screens/achievements_screen.dart';
+import 'services/notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/shop_provider.dart';
 import 'providers/auth_provider.dart';
 
+// Top-level function for background message handler
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Background message handler
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Initialize notification service
+  await NotificationService().initialize();
+
+  // Set up background message handler
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   runApp(const StudyQuestApp());
 }
 
@@ -59,6 +75,7 @@ class StudyQuestApp extends StatelessWidget {
               '/market': (context) => const MarketScreen(),
               '/profile': (context) => const ProfileScreen(),
               '/leaderboard': (context) => const LeaderboardScreen(),
+              '/achievements': (context) => const AchievementsScreen(),
             },
           );
         },

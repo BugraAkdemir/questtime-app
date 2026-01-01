@@ -138,4 +138,38 @@ class AppLocalizations {
   String get questsCompleted =>
       isTurkish ? 'Tamamlanan Görevler' : 'Quests Completed';
   String get you => isTurkish ? 'Sen' : 'You';
+
+  // Streak strings
+  String get streak => isTurkish ? 'Seri' : 'Streak';
+  String get currentStreak => isTurkish ? 'Günlük Seri' : 'Daily Streak';
+  String get dayStreak => isTurkish ? 'Gün Seri' : 'Day Streak';
+  String get days => isTurkish ? 'Gün' : 'Days';
+  String get keepItUp => isTurkish ? 'Devam Et!' : 'Keep It Up!';
+  String get streakBroken => isTurkish ? 'Seri Kırıldı' : 'Streak Broken';
+  String get newStreakStarted =>
+      isTurkish ? 'Yeni Seri Başladı' : 'New Streak Started';
+
+  // Achievement strings
+  String get achievements => isTurkish ? 'Başarımlar' : 'Achievements';
+  String get unlocked => isTurkish ? 'Açıldı' : 'Unlocked';
+  String get locked => isTurkish ? 'Kilitli' : 'Locked';
+  String get progress => isTurkish ? 'İlerleme' : 'Progress';
+  String get achievementUnlocked =>
+      isTurkish ? 'Başarım Açıldı!' : 'Achievement Unlocked!';
+  String get congratulations => isTurkish ? 'Tebrikler!' : 'Congratulations!';
+  String get noAchievementsYet =>
+      isTurkish ? 'Henüz başarım yok' : 'No achievements yet';
+  String get viewAllAchievements =>
+      isTurkish ? 'Tüm Başarımları Gör' : 'View All Achievements';
+
+  // Notification strings
+  String get dailyReminder =>
+      isTurkish ? 'Günlük Ders Hatırlatması' : 'Daily Study Reminder';
+  String get timeToStudy => isTurkish ? 'Çalışma Zamanı!' : 'Time to Study!';
+  String get dontBreakYourStreak => isTurkish
+      ? 'Serini kırma! Bugün de çalışmayı unutma.'
+      : "Don't break your streak! Remember to study today.";
+  String get achievementNotification => isTurkish
+      ? 'Yeni bir başarım kazandın!'
+      : 'You earned a new achievement!';
 }

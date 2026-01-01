@@ -262,6 +262,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       );
                       break;
+                    case 'achievements':
+                      Navigator.pushNamed(context, '/achievements');
+                      break;
                     case 'profile':
                       Navigator.pushNamed(context, '/profile');
                       break;
@@ -345,6 +348,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 12),
                         Text(localizations.isTurkish ? 'Market' : 'Market'),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'achievements',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.emoji_events,
+                          size: 20,
+                          color: AppTheme.primaryPurple,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(localizations.achievements),
                       ],
                     ),
                   ),
@@ -533,6 +550,44 @@ class _HomeScreenState extends State<HomeScreen> {
                                               AppTheme.primaryPurple,
                                             ),
                                         borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      // Streak display
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              Colors.orange.shade400,
+                                              Colors.orange.shade600,
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            AppTheme.radiusMD,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.local_fire_department,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              '${appState.userProgress.currentStreak} ${localizations.dayStreak}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                       const SizedBox(height: 12),
                                       Row(

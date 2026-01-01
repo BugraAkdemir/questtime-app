@@ -2,9 +2,11 @@ import 'package:flutter/foundation.dart';
 import '../models/user_progress.dart';
 import '../models/quest.dart';
 import '../models/daily_quest.dart';
+import '../models/achievement.dart';
 import '../services/storage_service.dart';
 import '../services/firestore_service.dart';
 import '../services/xp_service.dart';
+import '../services/achievement_service.dart';
 
 /// Main app state provider using ChangeNotifier
 class AppStateProvider with ChangeNotifier {
@@ -14,10 +16,12 @@ class AppStateProvider with ChangeNotifier {
   UserProgress _userProgress = UserProgress();
   List<Quest> _quests = [];
   List<DailyQuest> _dailyQuests = [];
+  Map<String, UserAchievement> _userAchievements = {}; // achievementId -> UserAchievement
 
   UserProgress get userProgress => _userProgress;
   List<Quest> get quests => _quests;
   List<DailyQuest> get dailyQuests => _dailyQuests;
+  Map<String, UserAchievement> get userAchievements => _userAchievements;
 
   /// Initialize and load data
   Future<void> initialize() async {
@@ -71,11 +75,56 @@ class AppStateProvider with ChangeNotifier {
 
     // Update user progress
     _userProgress = XPService.addXP(_userProgress, quest.xpReward);
+
+    // Update subject-specific study minutes
+    _userProgress = AchievementService.updateSubjectStudyMinutes(
+      _userProgress,
+      quest,
+    );
+
+    // Update streak
+    _userProgress = AchievementService.updateStreak(_userProgress);
+
     _userProgress = _userProgress.copyWith(
       totalStudyMinutes: _userProgress.totalStudyMinutes + quest.durationMinutes,
       completedQuestsCount: _userProgress.completedQuestsCount + 1,
       coins: _userProgress.coins + quest.coinReward,
     );
+
+    // Check achievements
+    final completedQuests = _quests.where((q) => q.isCompleted).toList();
+    final newlyUnlocked = AchievementService.checkAchievements(
+      userProgress: _userProgress,
+      completedQuests: completedQuests,
+      newlyCompletedQuest: completedQuest,
+    );
+
+    // Update user achievements and award rewards
+    for (final achievement in newlyUnlocked) {
+      final existing = _userAchievements[achievement.id];
+      if (existing == null || !existing.isUnlocked) {
+        // Newly unlocked achievement
+        _userAchievements[achievement.id] = UserAchievement(
+          achievementId: achievement.id,
+          isUnlocked: true,
+          unlockedAt: DateTime.now(),
+          currentProgress: achievement.requirement,
+        );
+
+        // Award XP and coins
+        if (achievement.xpReward > 0) {
+          _userProgress = XPService.addXP(_userProgress, achievement.xpReward);
+        }
+        if (achievement.coinReward > 0) {
+          _userProgress = _userProgress.copyWith(
+            coins: _userProgress.coins + achievement.coinReward,
+          );
+        }
+      }
+    }
+
+    // Update achievement progress for all achievements
+    _updateAchievementProgress();
 
     // Update daily quests progress
     await _updateDailyQuestsProgress(quest);
@@ -92,6 +141,51 @@ class AppStateProvider with ChangeNotifier {
     }
 
     notifyListeners();
+
+    // Return newly unlocked achievements for UI display
+    return;
+  }
+
+  /// Update progress for all achievements
+  void _updateAchievementProgress() {
+    final allAchievements = Achievements.getAllAchievements();
+    final completedQuests = _quests.where((q) => q.isCompleted).toList();
+
+    for (final achievement in allAchievements) {
+      final progress = AchievementService.getAchievementProgress(
+        achievement: achievement,
+        userProgress: _userProgress,
+        completedQuests: completedQuests,
+      );
+
+      final existing = _userAchievements[achievement.id];
+      if (existing == null) {
+        // New achievement tracking
+        _userAchievements[achievement.id] = UserAchievement(
+          achievementId: achievement.id,
+          isUnlocked: progress >= achievement.requirement,
+          unlockedAt: progress >= achievement.requirement ? DateTime.now() : null,
+          currentProgress: progress,
+        );
+      } else if (!existing.isUnlocked && progress >= achievement.requirement) {
+        // Just unlocked
+        _userAchievements[achievement.id] = UserAchievement(
+          achievementId: achievement.id,
+          isUnlocked: true,
+          unlockedAt: DateTime.now(),
+          currentProgress: progress,
+        );
+      } else {
+        // Update progress
+        _userAchievements[achievement.id] = UserAchievement(
+          achievementId: achievement.id,
+          isUnlocked: existing.isUnlocked || progress >= achievement.requirement,
+          unlockedAt: existing.unlockedAt ??
+              (progress >= achievement.requirement ? DateTime.now() : null),
+          currentProgress: progress,
+        );
+      }
+    }
   }
 
   /// Add a new quest

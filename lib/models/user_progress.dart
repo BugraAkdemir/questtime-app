@@ -9,6 +9,9 @@ class UserProgress {
   DateTime lastUpdate;
   String? name; // User's display name
   String? username; // User's username
+  int currentStreak; // Current daily study streak
+  DateTime? lastStudyDate; // Last date user completed a quest
+  Map<String, int> subjectStudyMinutes; // Minutes studied per subject
 
   UserProgress({
     this.level = 1,
@@ -20,7 +23,11 @@ class UserProgress {
     DateTime? lastUpdate,
     this.name,
     this.username,
-  }) : lastUpdate = lastUpdate ?? DateTime.now();
+    this.currentStreak = 0,
+    this.lastStudyDate,
+    Map<String, int>? subjectStudyMinutes,
+  })  : lastUpdate = lastUpdate ?? DateTime.now(),
+        subjectStudyMinutes = subjectStudyMinutes ?? {};
 
   /// XP needed for next level
   int get xpForNextLevel {
@@ -52,22 +59,43 @@ class UserProgress {
     'lastUpdate': lastUpdate.toIso8601String(),
     'name': name,
     'username': username,
+    'currentStreak': currentStreak,
+    'lastStudyDate': lastStudyDate?.toIso8601String(),
+    'subjectStudyMinutes': subjectStudyMinutes,
   };
 
   /// Create from JSON
-  factory UserProgress.fromJson(Map<String, dynamic> json) => UserProgress(
-    level: json['level'] as int? ?? 1,
-    currentXP: json['currentXP'] as int? ?? 0,
-    totalXP: json['totalXP'] as int? ?? 0,
-    totalStudyMinutes: json['totalStudyMinutes'] as int? ?? 0,
-    completedQuestsCount: json['completedQuestsCount'] as int? ?? 0,
-    coins: json['coins'] as int? ?? 0,
-    lastUpdate: json['lastUpdate'] != null
-        ? DateTime.parse(json['lastUpdate'] as String)
-        : DateTime.now(),
-    name: json['name'] as String?,
-    username: json['username'] as String?,
-  );
+  factory UserProgress.fromJson(Map<String, dynamic> json) {
+    final subjectMinutes = json['subjectStudyMinutes'];
+    Map<String, int> subjectMap = {};
+    if (subjectMinutes != null && subjectMinutes is Map) {
+      subjectMap = Map<String, int>.from(
+        subjectMinutes.map((key, value) => MapEntry(
+              key.toString(),
+              value is int ? value : (value as num).toInt(),
+            )),
+      );
+    }
+
+    return UserProgress(
+      level: json['level'] as int? ?? 1,
+      currentXP: json['currentXP'] as int? ?? 0,
+      totalXP: json['totalXP'] as int? ?? 0,
+      totalStudyMinutes: json['totalStudyMinutes'] as int? ?? 0,
+      completedQuestsCount: json['completedQuestsCount'] as int? ?? 0,
+      coins: json['coins'] as int? ?? 0,
+      lastUpdate: json['lastUpdate'] != null
+          ? DateTime.parse(json['lastUpdate'] as String)
+          : DateTime.now(),
+      name: json['name'] as String?,
+      username: json['username'] as String?,
+      currentStreak: json['currentStreak'] as int? ?? 0,
+      lastStudyDate: json['lastStudyDate'] != null
+          ? DateTime.parse(json['lastStudyDate'] as String)
+          : null,
+      subjectStudyMinutes: subjectMap,
+    );
+  }
 
   /// Copy with updated values
   UserProgress copyWith({
@@ -80,6 +108,9 @@ class UserProgress {
     DateTime? lastUpdate,
     String? name,
     String? username,
+    int? currentStreak,
+    DateTime? lastStudyDate,
+    Map<String, int>? subjectStudyMinutes,
   }) => UserProgress(
     level: level ?? this.level,
     currentXP: currentXP ?? this.currentXP,
@@ -90,5 +121,18 @@ class UserProgress {
     lastUpdate: lastUpdate ?? this.lastUpdate,
     name: name ?? this.name,
     username: username ?? this.username,
+    currentStreak: currentStreak ?? this.currentStreak,
+    lastStudyDate: lastStudyDate ?? this.lastStudyDate,
+    subjectStudyMinutes: subjectStudyMinutes ?? this.subjectStudyMinutes,
   );
+
+  /// Get study minutes for a specific subject
+  int getSubjectStudyMinutes(String subjectKey) {
+    return subjectStudyMinutes[subjectKey] ?? 0;
+  }
+
+  /// Get study hours for a specific subject
+  double getSubjectStudyHours(String subjectKey) {
+    return getSubjectStudyMinutes(subjectKey) / 60.0;
+  }
 }
