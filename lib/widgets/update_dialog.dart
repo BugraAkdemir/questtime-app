@@ -20,18 +20,37 @@ class UpdateDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _openUpdateUrl() async {
+  Future<void> _openUpdateUrl(BuildContext context) async {
     final url = VersionCheckService.getUpdateUrl();
     final uri = Uri.parse(url);
 
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $url';
+      // Try to launch URL directly - Android will handle browser selection
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched) {
+        // Fallback: try with platformDefault mode
+        await launchUrl(
+          uri,
+          mode: LaunchMode.platformDefault,
+        );
       }
     } catch (e) {
       print('Error launching URL: $e');
+      // Show error to user if available
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Could not open browser. Please visit: $url',
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -221,7 +240,7 @@ class UpdateDialog extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: _openUpdateUrl,
+                        onPressed: () => _openUpdateUrl(context),
                         icon: const Icon(Icons.download_rounded, size: 22),
                         label: Text(
                           localizations.updateNow,
